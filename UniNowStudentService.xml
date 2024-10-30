@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binding xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="binding.xsd" xmlns:tns="http://www.his.de/ws">
+
+    <service name="UniNowStudentService" secured="true">
+        <meta>
+            <script-engine>js-rhino</script-engine>
+            <script-api-version>1.0</script-api-version>
+        </meta>
+
+        <operation name="readMetaStudentWithCoS"
+                   type="script"
+                   documented="Findet Studierende, die aktuelle Semesterperiode, Personenhauptdaten sowie Studierendenhauptdaten inklusive aktueller DegreeProgramProgresses, CourseOfStudy und Degree fuer die laufende Semesterperiode anhand der in HISinOne vergebenen Matrikelnummer.">
+            <securedBy>
+                <rights>RIGHT_CM_STU_STUDENT_VIEW_STUDENT_DATA, RIGHT_CM_STU_STUDENT_EDIT_STUDENT_DATA</rights>
+                <rights>RIGHT_CS_PSV_PERSON_VIEW_PERSON_MAINDATA, RIGHT_CS_PSV_PERSON_EDIT_PERSON_MAINDATA</rights>
+                <rights>RIGHT_CS_PSV_PERSON_VIEW_PERSON_RIGHTSROLES</rights>
+                <rights>RIGHT_CS_SYS_CORE_VIEW_KEYTABLE</rights>
+            </securedBy>
+            <args>
+                <value name="registrationnumber" type="Long" nillable="false" />
+				<value name="withEmailAddress" type="Boolean" nillable="false" usage="optional" documented="Gibt an, ob die studentische Hochschul-E-Mail-Adresse übermittelt werden soll." />
+				<value name="withStudentStatus" type="Boolean" nillable="false" usage="optional" documented="Gibt an, ob der Hoererstatus (z.B. Haupthoerer, Zweithoerer, Gasthoerer etc.) übermittelt werden soll." />
+				<value name="withCourseOfStudy" type="Boolean" nillable="false" usage="optional" documented="Gibt an, ob der Studiengang (z.B. Betriebswirtschaftslehre, Maschinenbau etc.) übermittelt werden soll." />
+				<value name="withDegree" type="Boolean" nillable="false" usage="optional" documented="Gibt an, ob der angestrebte Abschluss (z.B. Bachelor, Master) übermittelt werden soll (hängt an dem Studiengang)." />
+                <value name="lang" type="String" nillable="true" usage="optional" documented="Die zu beruecksichtigende Sprache im der Notation 'de' oder 'en'." />
+            </args>
+
+            <script source="scripts/UniNowStudentService.readMetaStudentWithCoS.js" />
+
+            <return>
+                <structure name="uninowstudentwithmeta" map-as="UniNowStudentWithMeta" usage="required" nillable="true" />
+            </return>
+
+        </operation>
+
+    </service>
+
+        <mapping type-name="UniNowStudentWithMeta" create-type="java.util.LinkedHashMap">
+            <value name="registrationnumber" type="String" usage="required" nillable="false" />
+            <structure name="actualsemesterperiod" map-as="ActualSemesterPeriod" usage="required" nillable="false" />
+            <structure name="personmaindata" map-as="PersonMainData" usage="optional" nillable="true" />
+            <structure name="studentmaindata" map-as="StudentMainData" usage="optional" nillable="true" />
+        </mapping>
+
+        <mapping type-name="ActualSemesterPeriod" create-type="java.util.LinkedHashMap">
+            <value name="id" type="String" usage="required" nillable="true" />
+            <value name="uniquename" type="String" usage="required" nillable="false" />
+            <value name="shorttext" type="String" usage="required" nillable="false" />
+            <value name="defaulttext" type="String" usage="required" nillable="false" />
+            <value name="longtext" type="String" usage="required" nillable="false" />
+            <value name="year" type="String" usage="required" nillable="false" />
+            <value name="startdate" type="Date" usage="required" nillable="false" />
+            <value name="enddate" type="Date" usage="required" nillable="false" />
+        </mapping>
+
+        <mapping type-name="PersonMainData" create-type="java.util.LinkedHashMap">
+            <value name="firstname" type="String" usage="required" nillable="false" />
+            <value name="surname" type="String" usage="required" nillable="false" />
+			<value name="email" type="String" usage="optional" nillable="true" />
+            <value name="birthcity" type="String" usage="required" nillable="false" />
+            <value name="birthdate" type="Date" usage="required" nillable="false" />
+        </mapping>
+
+        <mapping type-name="StudentMainData" create-type="java.util.LinkedHashMap">
+            <collection name="degreeprogramprogresses" nillable="false" usage="optional">
+                <structure name="degreeprogramprogress" map-as="DegreeProgramProgress" usage="optional" nillable="true" />
+            </collection>
+        </mapping>
+
+        <mapping type-name="DegreeProgramProgress" create-type="java.util.LinkedHashMap">
+            <value name="id" type="String" usage="required" nillable="true" />
+            <value name="periodid" type="String" usage="required" nillable="true" />
+            <value name="startdate" type="Date" usage="required" nillable="false" />
+            <value name="enddate" type="Date" usage="required" nillable="false" />
+            <value name="finished" type="Date" usage="required" nillable="true" />
+            <structure name="studentstatus" map-as="Studentstatus" usage="optional" nillable="true"/>
+            <structure name="courseofstudy" map-as="CourseOfStudy" usage="optional" nillable="true"/>
+        </mapping>
+
+        <mapping type-name="Studentstatus" create-type="java.util.LinkedHashMap">
+            <value name="id" type="String" usage="required" nillable="true" />
+            <value name="uniquename" type="String" usage="required" nillable="false" />
+            <value name="shorttext" type="String" usage="required" nillable="false" />
+            <value name="defaulttext" type="String" usage="required" nillable="false" />
+            <value name="longtext" type="String" usage="required" nillable="false" />
+        </mapping>
+
+        <mapping type-name="CourseOfStudy" create-type="java.util.LinkedHashMap">
+            <value name="id" type="String" usage="required" nillable="true" />
+            <value name="shorttext" type="String" usage="required" nillable="false" />
+            <value name="defaulttext" type="String" usage="required" nillable="false" />
+            <value name="longtext" type="String" usage="required" nillable="false" />
+            <structure name="degree" map-as="Degree" usage="optional" nillable="true" />
+        </mapping>
+
+        <mapping type-name="Degree" create-type="java.util.LinkedHashMap">
+            <value name="id" type="String" usage="required" nillable="true" />
+            <value name="shorttext" type="String" usage="required" nillable="false" />
+            <value name="defaulttext" type="String" usage="required" nillable="false" />
+            <value name="longtext" type="String" usage="required" nillable="false" />
+        </mapping>
+
+</binding>
